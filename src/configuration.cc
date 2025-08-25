@@ -59,6 +59,14 @@ void Config::CalculateSize() {
         ranks = channel_size / megs_per_rank;
         channel_size = ranks * megs_per_rank;
     }
+    
+    std::cout << "Memory Size: " << channel_size * channels / 1024
+              << " GB (" << channels << " channels, " << ranks
+              << " ranks/channel, " << banks << " banks/device, "
+              << page_size << " B/page, "
+              << megs_per_bank << " MB/bank, "
+              << megs_per_rank << " MB/rank, "
+              << devices_per_rank << " devices/rank)" << std::endl;
     return;
 }
 

@@ -110,12 +110,14 @@ struct Transaction {
         : addr(addr),
           added_cycle(0),
           complete_cycle(0),
-          is_write(is_write) {}
+          is_write(is_write),
+          id(0) {}
     Transaction(const Transaction& tran)
         : addr(tran.addr),
           added_cycle(tran.added_cycle),
           complete_cycle(tran.complete_cycle),
-          is_write(tran.is_write) {}
+          is_write(tran.is_write),
+          id(tran.id) {}
     Transaction(uint64_t addr, bool is_write, uint64_t id)
         : addr(addr),
           added_cycle(0),
