@@ -52,7 +52,7 @@ std::pair<uint64_t, int> Controller::ReturnDoneTrans(uint64_t clk) {
                 simple_stats_.Increment("num_reads_done");
                 simple_stats_.AddValue("read_latency", clk_ - it->added_cycle);
             }
-            auto pair = std::make_pair(it->addr, it->is_write);
+            auto pair = std::make_pair(it->id, it->is_write);
             it = return_queue_.erase(it);
             return pair;
         } else {

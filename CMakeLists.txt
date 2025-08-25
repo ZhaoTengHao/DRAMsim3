@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.10)
 project(dramsim3)
 
-set(default_build_type "Release")
+set(default_build_type "Debug")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
@@ -10,6 +10,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 add_library(inih INTERFACE)
 target_include_directories(inih INTERFACE ext/headers)
@@ -115,5 +117,40 @@ add_custom_command(
     TARGET dramsim3test POST_BUILD
     COMMAND dramsim3test
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS dramsim3test dramsim3
+    # DEPENDS dramsim3test dramsim3
 )
+
+# === Python 绑定支持 ===
+
+option(BUILD_PYTHON_BINDINGS "Build Python bindings for DRAMSim3" ON)
+set(Python3_EXECUTABLE "/data/home/tenghaozhao/.conda/envs/zth312/bin/python3.12")
+set(pybind11_DIR /data/home/tenghaozhao/.conda/envs/zth312/lib/python3.12/site-packages/pybind11/share/cmake/pybind11)
+# set(Python3_EXECUTABLE /data/home/tenghaozhao/.conda/envs/zth1/bin/python3.13)
+
+if(BUILD_PYTHON_BINDINGS)
+  cmake_policy(SET CMP0057 NEW) # Enable new behavior for string comparisons
+  find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+  find_package(pybind11 REQUIRED)
+
+  pybind11_add_module(dramsim3_py
+    src/dramsim3_py.cc  
+  )
+  
+  target_link_libraries(dramsim3_py PRIVATE dramsim3 args)
+  
+  set_target_properties(dramsim3_py PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../src
+  )
+  
+  message(STATUS "Python bindings enabled - will build dramsim3_py module")
+  # 打印配置信息用于调试
+  message(STATUS "Python executable: ${Python3_EXECUTABLE}")
+  message(STATUS "Python include dirs: ${Python3_INCLUDE_DIRS}")
+  message(STATUS "Python libraries: ${Python3_LIBRARIES}")
+else()
+  message(STATUS "Python bindings disabled - skip building dramsim3_py")
+endif()
+  

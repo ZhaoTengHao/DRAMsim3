@@ -144,6 +144,26 @@ bool JedecDRAMSystem::AddTransaction(uint64_t hex_addr, bool is_write) {
     return ok;
 }
 
+bool JedecDRAMSystem::AddTransaction(uint64_t hex_addr, bool is_write,
+                                     uint64_t id) {
+    // Record trace - Record address trace for debugging or other purposes
+#ifdef ADDR_TRACE
+    address_trace_ << std::hex << hex_addr << std::dec << " "
+                   << (is_write ? "WRITE " : "READ ") << clk_ << std::endl;
+#endif
+    
+    int channel = GetChannel(hex_addr);
+    bool ok = ctrls_[channel]->WillAcceptTransaction(hex_addr, is_write);
+
+    assert(ok);
+    if (ok) {
+        Transaction trans = Transaction(hex_addr, is_write, id);
+        ctrls_[channel]->AddTransaction(trans);
+    }
+    last_req_clk_ = clk_;
+    return ok;
+}
+
 void JedecDRAMSystem::ClockTick() {
     for (size_t i = 0; i < ctrls_.size(); i++) {
         // look ahead and return earlier
@@ -179,6 +199,14 @@ IdealDRAMSystem::~IdealDRAMSystem() {}
 
 bool IdealDRAMSystem::AddTransaction(uint64_t hex_addr, bool is_write) {
     auto trans = Transaction(hex_addr, is_write);
+    trans.added_cycle = clk_;
+    infinite_buffer_q_.push_back(trans);
+    return true;
+}
+
+bool IdealDRAMSystem::AddTransaction(uint64_t hex_addr, bool is_write,
+                                    uint64_t id) {
+    auto trans = Transaction(hex_addr, is_write, id);
     trans.added_cycle = clk_;
     infinite_buffer_q_.push_back(trans);
     return true;

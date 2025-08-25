@@ -18,6 +18,7 @@ class MemorySystem {
                  std::function<void(uint64_t)> write_callback);
     ~MemorySystem();
     void ClockTick();
+    uint64_t GetClockCycle() const;
     void RegisterCallbacks(std::function<void(uint64_t)> read_callback,
                            std::function<void(uint64_t)> write_callback);
     double GetTCK() const;
